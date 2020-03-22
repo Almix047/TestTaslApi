@@ -1,4 +1,6 @@
 class Api::V1::PostsController < ApiController
+  before_action :validate_empty_params, only: %i[create]
+
   def create
     @post = Post.new(post_params.merge(
                        user_id: User.find_or_create_by(login: params['login']).id,
@@ -16,5 +18,14 @@ class Api::V1::PostsController < ApiController
 
   def post_params
     params.require(:post).permit(:title, :content)
+  end
+
+  def validate_empty_params
+    if params['post'].empty?
+      render json: {
+        status: 422,
+        message: { "title": ["can't be blank"], "content": ["can't be blank"] }
+      }, status: :unprocessable_entity
+    end
   end
 end
