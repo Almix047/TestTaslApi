@@ -1,6 +1,11 @@
 class Api::V1::PostsController < ApiController
   before_action :validate_empty_params, only: %i[create]
 
+  def index
+    @posts = Post.limit(params['limit']).order(avg_rating: :desc)
+    render json: @posts.map { |i| [i.title].push(i.content) }.flatten
+  end
+
   def create
     @post = Post.new(post_params.merge(
                        user_id: User.find_or_create_by(login: params['login']).id,
